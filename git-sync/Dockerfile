@@ -26,6 +26,11 @@ RUN addgroup -g ${GID} gitsync && \
 RUN mkdir -p /data/.ssh /data/repo-sync /secrets/ssh && \
     chown -R ${UID}:${GID} /data /secrets
 
+# Redirect HOME to /data/home (the PVC path) so that git global config,
+# ssh-keygen, and any other $HOME writes land on the writable PVC rather
+# than the read-only root filesystem.
+ENV HOME=/data/home
+
 # Bake in the git-sync helper script at a well-known, executable path.
 COPY docker-entrypoint.sh /usr/local/bin/git-sync.sh
 RUN chmod +x /usr/local/bin/git-sync.sh
