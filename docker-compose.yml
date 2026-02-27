@@ -15,3 +15,22 @@ services:
       - ./projects:/projects
     command: web
     restart: unless-stopped
+
+  git-sync:
+    build:
+      context: ./git-sync
+      dockerfile: Dockerfile
+    image: git-sync:latest
+    container_name: git-sync
+    environment:
+      - GIT_SYNC_REPO=${GIT_SYNC_REPO:-}
+      - GIT_SYNC_BRANCH=${GIT_SYNC_BRANCH:-main}
+      - GIT_SYNC_DEST=${GIT_SYNC_DEST:-/data/repo}
+      - GIT_SYNC_INTERVAL=${GIT_SYNC_INTERVAL:-60}
+      - GIT_SSH_KEY_PATH=${GIT_SSH_KEY_PATH:-/data/ssh/id_rsa}
+    volumes:
+      - ./data/repo:/data/repo
+      - ./data/ssh:/data/ssh:ro
+      - ./data/log:/data/log
+    command: sync
+    restart: unless-stopped

@@ -1,0 +1,14 @@
+# Version control metadata
+.git
+.gitignore
+
+# CI/CD — not needed in the build context
+.github
+
+# Runtime data mounts — not baked into the image
+data/
+
+# Docs & metadata
+README.md
+LICENSE
+.opencode-version
