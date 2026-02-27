@@ -1,0 +1,78 @@
+name: Check for OpenCode Updates
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Nightly at midnight UTC
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      has_update: ${{ steps.compare.outputs.has_update }}
+      latest_version: ${{ steps.latest.outputs.version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get latest OpenCode version
+        id: latest
+        run: |
+          VERSION=$(curl -fsSL \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/sst/opencode/releases/latest \
+            | jq -r '.tag_name')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Latest OpenCode version: $VERSION"
+
+      - name: Get last built version
+        id: last
+        run: |
+          VERSION=$(cat .opencode-version 2>/dev/null || echo "none")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Last built version: $VERSION"
+
+      - name: Compare versions
+        id: compare
+        run: |
+          if [ "${{ steps.latest.outputs.version }}" != "${{ steps.last.outputs.version }}" ]; then
+            echo "has_update=true" >> "$GITHUB_OUTPUT"
+            echo "Update available: ${{ steps.last.outputs.version }} -> ${{ steps.latest.outputs.version }}"
+          else
+            echo "has_update=false" >> "$GITHUB_OUTPUT"
+            echo "Already up to date: ${{ steps.last.outputs.version }}"
+          fi
+
+  build:
+    needs: check
+    if: needs.check.outputs.has_update == 'true'
+    uses: ./.github/workflows/docker-build-push.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: write
+
+  record:
+    needs: [check, build]
+    if: needs.check.outputs.has_update == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update version tracking file
+        run: printf "%s" "${{ needs.check.outputs.latest_version }}" > .opencode-version
+
+      - name: Commit updated version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .opencode-version
+          git commit -m "chore: update tracked OpenCode version to ${{ needs.check.outputs.latest_version }}"
+          git push

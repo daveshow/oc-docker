@@ -1,0 +1,17 @@
+services:
+  opencode:
+    build: .
+    image: opencode:latest
+    container_name: opencode
+    ports:
+      - "${OPENCODE_PORT:-4096}:${OPENCODE_PORT:-4096}"
+    environment:
+      - OPENCODE_PORT=${OPENCODE_PORT:-4096}
+      - OPENCODE_HOSTNAME=0.0.0.0
+      - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD:-}
+    volumes:
+      - ./config:/config
+      - ./data:/data
+      - ./projects:/projects
+    command: web
+    restart: unless-stopped
