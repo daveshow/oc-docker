@@ -47,7 +47,7 @@ fi
 # Trust GITDIR regardless of which UID owns it.  Git 2.35.2+ rejects operations
 # on directories owned by a different user without this.  This is safe because
 # GITDIR is a known, controlled path managed by this script.
-git config --global --add safe.directory "$GITDIR"
+# git config --global --add safe.directory "$GITDIR"
 
 # Prefer the secret mounted at SECRETPATH; fall back to any PVC-stored key.
 if [ -f "$SECRETPATH" ] && [ ! -f "$SSH_KEY_PATH" ]; then
