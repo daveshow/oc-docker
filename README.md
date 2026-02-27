@@ -1,5 +1,8 @@
 # oc-docker
 
+[![Build and Push Docker Image](https://github.com/daveshow/oc-docker/actions/workflows/docker-build-push.yml/badge.svg)](https://github.com/daveshow/oc-docker/actions/workflows/docker-build-push.yml)
+[![Check for OpenCode Updates](https://github.com/daveshow/oc-docker/actions/workflows/check-updates.yml/badge.svg)](https://github.com/daveshow/oc-docker/actions/workflows/check-updates.yml)
+
 Run [OpenCode AI](https://opencode.ai) in a secure, self-contained Docker environment with built-in support for MCP (Model Context Protocol) servers.
 
 ## What's Included
@@ -95,3 +98,19 @@ Edit `config/opencode.jsonc` to configure MCP servers and other settings. The de
 | `/config` | OpenCode configuration and extensions |
 | `/data` | Persistent data (sessions, logs, auth tokens) |
 | `/projects` | Your project code |
+
+## CI/CD
+
+### Build and Push (`docker-build-push.yml`)
+
+Builds a multi-arch image (`linux/amd64`, `linux/arm64`) and pushes it to the GitHub Container Registry (`ghcr.io`) on every push to `main`/`master`, on version tags, and via manual dispatch. Docker Hub is also supported when `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets are configured.
+
+```
+ghcr.io/daveshow/oc-docker:latest
+```
+
+### Nightly Update Check (`check-updates.yml`)
+
+Runs every night at midnight UTC. Compares the [latest OpenCode release](https://github.com/sst/opencode/releases) against the version tracked in `.opencode-version`. When a new release is detected, the workflow automatically rebuilds and pushes the updated image, then commits the new version to `.opencode-version`.
+
+You can also trigger the update check manually from the **Actions** tab.
