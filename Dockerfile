@@ -22,8 +22,8 @@ RUN cp /root/.opencode/bin/opencode /usr/local/bin/opencode && \
     chmod 755 /usr/local/bin/opencode
 
 # ---- Stage 2: Runtime ----
-# Lean final image: node:alpine + python3 + bash only.
-# Build tools (curl, tar, py3-pip) are intentionally omitted.
+# Lean final image: node:alpine + python3 + bash + curl + ripgrep.
+# Build tools (tar, py3-pip) are intentionally omitted.
 FROM node:alpine AS runtime
 
 # Non-root UID/GID that matches the Kubernetes securityContext
@@ -33,7 +33,7 @@ ARG GID=10001
 # Runtime system dependencies only
 RUN --mount=type=cache,target=/var/cache/apk \
     apk update && \
-    apk add python3 bash
+    apk add python3 bash curl ripgrep
 
 # Copy self-contained uv/uvx binaries from the builder stage
 COPY --from=builder /usr/bin/uv /usr/bin/uv
