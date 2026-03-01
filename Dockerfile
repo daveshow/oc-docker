@@ -43,7 +43,7 @@ COPY --from=builder /usr/bin/uvx /usr/bin/uvx
 COPY --from=builder /usr/local/bin/opencode /usr/local/bin/opencode
 
 # Copy the bun binary into /usr/local/bin (world-readable, no home dependency)
-COPY --from=oven/bun:1 /usr/local/bin/bun /usr/local/bin/bun
+COPY --from=oven/bun:1-alpine /usr/local/bin/bun /usr/local/bin/bun
 # Create a non-root user/group to match the K8s securityContext
 RUN addgroup -g ${GID} opencode && \
     adduser -D -u ${UID} -G opencode -h /home/opencode opencode
