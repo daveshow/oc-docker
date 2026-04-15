@@ -33,7 +33,7 @@ ARG GID=10001
 # Runtime system dependencies only
 RUN --mount=type=cache,target=/var/cache/apk \
     apk update && \
-    apk add python3 bash curl ripgrep
+    apk add python3 bash curl ripgrep git openssh-client
 
 # Copy self-contained uv/uvx binaries from the builder stage
 COPY --from=builder /usr/bin/uv /usr/bin/uv
