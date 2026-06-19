@@ -6,7 +6,7 @@
 FROM node:alpine AS builder
 
 # System packages needed only to fetch/install tools
-RUN --mount=type=cache,target=/var/cache/apk \
+RUN --mount=type=cache,target=/var/cache/apk,id=builder-apk \
     apk update && \
     apk add python3 py3-pip curl bash tar
 
@@ -31,7 +31,7 @@ ARG UID=10001
 ARG GID=10001
 
 # Runtime system dependencies only
-RUN --mount=type=cache,target=/var/cache/apk \
+RUN --mount=type=cache,target=/var/cache/apk,id=runtime-apk \
     apk update && \
     apk add python3 bash curl ripgrep git openssh-client
 

@@ -6,7 +6,7 @@
 FROM node:trixie AS builder
 
 # System packages needed only to fetch/install tools
-RUN --mount=type=cache,target=/var/cache/apt \
+RUN --mount=type=cache,target=/var/cache/apt,id=builder-apt \
     apt-get update && \
     apt-get install -y --no-install-recommends python3 python3-pip curl bash tar
 
@@ -31,7 +31,7 @@ ARG UID=10001
 ARG GID=10001
 
 # Runtime system dependencies only
-RUN --mount=type=cache,target=/var/cache/apt \
+RUN --mount=type=cache,target=/var/cache/apt,id=runtime-apt \
     apt-get update && \
     apt-get install -y --no-install-recommends python3 bash curl ripgrep git openssh-client
 
