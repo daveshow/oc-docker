@@ -1,14 +1,14 @@
 # syntax=docker/dockerfile:1
 
 # ---- Stage 1: Builder ----
-# Installs build-only tools (curl, tar, py3-pip) alongside uv and the
+# Installs build-only tools (curl, tar, python3-pip) alongside uv and the
 # OpenCode binary.  Nothing from this stage leaks into the runtime image.
-FROM node:alpine AS builder
+FROM node:trixie AS builder
 
 # System packages needed only to fetch/install tools
-RUN --mount=type=cache,target=/var/cache/apk \
-    apk update && \
-    apk add python3 py3-pip curl bash tar
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && \
+    apt-get install -y --no-install-recommends python3 python3-pip curl bash tar
 
 # Install uv (self-contained Rust binary; cached between builds)
 RUN --mount=type=cache,target=/root/.cache/pip \
@@ -22,18 +22,18 @@ RUN cp /root/.opencode/bin/opencode /usr/local/bin/opencode && \
     chmod 755 /usr/local/bin/opencode
 
 # ---- Stage 2: Runtime ----
-# Lean final image: node:alpine + python3 + bash + curl + ripgrep.
-# Build tools (tar, py3-pip) are intentionally omitted.
-FROM node:alpine AS runtime
+# Lean final image: node:trixie + python3 + bash + curl + ripgrep.
+# Build tools (tar, python3-pip) are intentionally omitted.
+FROM node:trixie AS runtime
 
 # Non-root UID/GID that matches the Kubernetes securityContext
 ARG UID=10001
 ARG GID=10001
 
 # Runtime system dependencies only
-RUN --mount=type=cache,target=/var/cache/apk \
-    apk update && \
-    apk add python3 bash curl ripgrep git openssh-client
+RUN --mount=type=cache,target=/var/cache/apt \
+    apt-get update && \
+    apt-get install -y --no-install-recommends python3 bash curl ripgrep git openssh-client
 
 # Copy self-contained uv/uvx binaries from the builder stage
 COPY --from=builder /usr/local/bin/uv /usr/local/bin/uv
@@ -43,10 +43,11 @@ COPY --from=builder /usr/local/bin/uvx /usr/local/bin/uvx
 COPY --from=builder /usr/local/bin/opencode /usr/local/bin/opencode
 
 # Copy the bun binary into /usr/local/bin (world-readable, no home dependency)
-COPY --from=oven/bun:1-alpine /usr/local/bin/bun /usr/local/bin/bun
+COPY --from=oven/bun:1-trixie /usr/local/bin/bun /usr/local/bin/bun
+
 # Create a non-root user/group to match the K8s securityContext
-RUN addgroup -g ${GID} opencode && \
-    adduser -D -u ${UID} -G opencode -h /home/opencode opencode
+RUN groupadd -g ${GID} opencode && \
+    useradd -m -u ${UID} -g opencode -d /home/opencode opencode
 
 # Create persistent volume mount points owned by the runtime user
 RUN mkdir -p /config /data/sessions /data/snapshots /data/log /projects /mcp && \
