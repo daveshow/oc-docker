@@ -36,8 +36,8 @@ RUN --mount=type=cache,target=/var/cache/apk \
     apk add python3 bash curl ripgrep git openssh-client
 
 # Copy self-contained uv/uvx binaries from the builder stage
-COPY --from=builder /usr/local/bin/uv /usr/local/bin/uv
-COPY --from=builder /usr/local/bin/uvx /usr/local/bin/uvx
+COPY --from=builder /usr/bin/uv /usr/bin/uv
+COPY --from=builder /usr/bin/uvx /usr/bin/uvx
 
 # Copy the OpenCode binary into /usr/local/bin (world-readable, no home dependency)
 COPY --from=builder /usr/local/bin/opencode /usr/local/bin/opencode
