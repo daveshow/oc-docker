@@ -47,6 +47,22 @@ projects/
 | `OPENCODE_HOSTNAME` | Server hostname | `127.0.0.1` |
 | `OPENCODE_CONFIG` | Path to config file | _(not set)_ |
 | `OPENCODE_SERVER_PASSWORD` | Basic auth password | _(not set)_ |
+| `OPENCODE_EXTRA_ARGS` | Extra space-separated global args passed to `opencode` | _(not set)_ |
+
+### Extra arguments (Kubernetes)
+
+Arguments after `web` are forwarded to the `web` command, and `OPENCODE_EXTRA_ARGS` is added to the global opencode arguments. Leave `command` unset so the image `ENTRYPOINT` still runs.
+
+```yaml
+containers:
+  - name: opencode
+    image: ghcr.io/daveshow/oc-docker:latest
+    args: ["web", "--print-logs"]
+    # or, alternatively:
+    env:
+      - name: OPENCODE_EXTRA_ARGS
+        value: "--print-logs --log-level DEBUG"
+```
 
 ## Quick Start
 

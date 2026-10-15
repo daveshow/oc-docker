@@ -16,13 +16,21 @@ if [ -n "${OPENCODE_SERVER_PASSWORD:-}" ]; then
 	OPENCODE_ARGS+=(--password "$OPENCODE_SERVER_PASSWORD")
 fi
 
+# Optional extra args, space-separated
+if [ -n "${OPENCODE_EXTRA_ARGS:-}" ]; then
+	read -r -a EXTRA <<< "$OPENCODE_EXTRA_ARGS"
+	OPENCODE_ARGS+=("${EXTRA[@]}")
+fi
+
 case "$1" in
 web)
+	shift
 	echo "Starting OpenCode server on ${OPENCODE_HOSTNAME}:${OPENCODE_PORT}..."
 	exec opencode "${OPENCODE_ARGS[@]}" \
 		web \
 		--port "$OPENCODE_PORT" \
-		--hostname "$OPENCODE_HOSTNAME"
+		--hostname "$OPENCODE_HOSTNAME" \
+		"$@"
 	;;
 *)
 	# Pass through any other command directly to opencode
